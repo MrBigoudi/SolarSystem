@@ -9,11 +9,11 @@
 
 int main(int argc, char** argv){
 
-    Game game(800,600,"SolarSystem");
+    GamePointer game = Game::init(800,600,"SolarSystem");
     Shaders shader("shaders/vert.glsl", "shaders/frag.glsl");
 
-    game.run(shader);
-    game.quit();
+    game->run(shader);
+    game->quit();
 
     exit(EXIT_SUCCESS);
 }

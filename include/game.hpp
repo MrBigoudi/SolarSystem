@@ -10,7 +10,10 @@
 #include "errorHandler.hpp"
 #include "shaders.hpp"
 
+class Game;
+
 using GameWindow = std::unique_ptr<GLFWwindow, decltype(&glfwDestroyWindow)>;
+using GamePointer = std::shared_ptr<Game>;
 
 /**
  * The main class of the program
@@ -28,6 +31,36 @@ class Game{
         */
         GLuint _IsWireframeOn = GLFW_FALSE;
 
+        /**
+         * The static instance of the game class
+        */
+        static GamePointer _Instance;
+
+    private:
+        /**
+         * An empty constructor
+        */
+        Game(){}
+
+        /**
+         * Init opengl, the window and the basic hints
+         * @param width The window's width
+         * @param height The window's height
+         * @param title The window's title
+         * @param major The opengl's major version (default 3)
+         * @param minor The opengl's minor version (default 3)
+         * @param profile The opengl's profile (default core)
+        */
+        void initGame(int width, int heigth, const std::string& title, 
+            int major = 3, int minor = 3, int profile = GLFW_OPENGL_CORE_PROFILE){
+            ErrorHandler::handle(initGLFW());
+            ErrorHandler::handle(setHint(GLFW_CONTEXT_VERSION_MAJOR, major));
+            ErrorHandler::handle(setHint(GLFW_CONTEXT_VERSION_MINOR, minor));
+            ErrorHandler::handle(setHint(GLFW_OPENGL_PROFILE, profile));
+            ErrorHandler::handle(createWindow(width, heigth, title));
+            ErrorHandler::handle(initGLAD());
+        }
+
     public:
         /**
          * A basic destructor
@@ -37,28 +70,31 @@ class Game{
         }
 
         /**
-         * An empty constructor
+         * Get the unique instance of the game class
+         * @return The instance
         */
-        Game(){}
+        static GamePointer getInstance(){
+            if(!_Instance) _Instance = GamePointer(new Game());
+            return _Instance;
+        }
 
         /**
-         * A constructor that init opengl, the window and the basic hints
+         * Init opengl, the window and the basic hints
          * @param width The window's width
          * @param height The window's height
          * @param title The window's title
          * @param major The opengl's major version (default 3)
          * @param minor The opengl's minor version (default 3)
          * @param profile The opengl's profile (default core)
+         * @return The game instance
         */
-        Game(int width, int heigth, const std::string& title, 
+        static GamePointer init(int width, int height, const std::string& title, 
             int major = 3, int minor = 3, int profile = GLFW_OPENGL_CORE_PROFILE){
-            ErrorHandler::handle(initGLFW());
-            ErrorHandler::handle(setHint(GLFW_CONTEXT_VERSION_MAJOR, major));
-            ErrorHandler::handle(setHint(GLFW_CONTEXT_VERSION_MINOR, minor));
-            ErrorHandler::handle(setHint(GLFW_OPENGL_PROFILE, profile));
-            ErrorHandler::handle(createWindow(width, heigth, title));
-            ErrorHandler::handle(initGLAD());
+            GamePointer gamePtr = getInstance();
+            gamePtr->initGame(width, height, title, major, minor, profile);
+            return gamePtr;
         }
+
 
         /**
          * Initiate GLFW
@@ -132,11 +168,6 @@ class Game{
         void run(const Shaders& shader);
 
         /**
-         * Process the inputs
-        */
-        void processInput();
-
-        /**
          * Quit the game
         */
         void quit() {
@@ -169,6 +200,16 @@ class Game{
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
+        /**
+         * Process the inpu
+         * @param window The game's window
+         * @param key The keyboard key that was pressed or released
+         * @param scancode The system specific scancode of the key
+         * @param action The action (GLFW_PRESS, GLFW_RELEASE or GLFW_REPEAT)
+         * @param mods Bit field describing which modifier keys were held down
+        */
+        static void inputCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
     private:
         // INPUT PROCESS - CALLBACKS
         /**
@@ -183,29 +224,12 @@ class Game{
         */
         void wireframeSwitchCommand(){
             if(!_IsWireframeOn){
-                unsetWireframeMode();
-                _IsWireframeOn = GLFW_FALSE;
-            } else {
                 setWireframeMode();
                 _IsWireframeOn = GLFW_TRUE;
+            } else {
+                unsetWireframeMode();
+                _IsWireframeOn = GLFW_FALSE;
             }
-        }
-
-    private:
-        /**
-         * Check if a given key is press
-         * @return True if it is
-        */
-        bool isPress(GLuint key) const {
-            return glfwGetKey(_Window.get(), key) == GLFW_PRESS;
-        }
-
-        /**
-         * Check if a given key is release
-         * @return True if it is
-        */
-        bool isRelease(GLuint key) const {
-            return glfwGetKey(_Window.get(), key) == GLFW_RELEASE;
         }
 };
 
