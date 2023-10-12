@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "errorHandler.hpp"
+#include "shaders.hpp"
 
 using GameWindow = std::unique_ptr<GLFWwindow, decltype(&glfwDestroyWindow)>;
 
@@ -21,6 +22,11 @@ class Game{
          * The main window
         */
         GameWindow _Window = GameWindow(nullptr, glfwDestroyWindow);
+
+        /**
+         * Tell if the wireframe mode is on
+        */
+        GLuint _IsWireframeOn = GLFW_FALSE;
 
     public:
         /**
@@ -121,18 +127,14 @@ class Game{
 
         /**
          * The main loop
+         * @param shader The shader to use
         */
-        void run(){
-           if(!_Window){
-                fprintf(stderr, "Can't run without a GLFW window!\n");
-                ErrorHandler::handle(ErrorCodes::NOT_INITALIZED);
-            } 
+        void run(const Shaders& shader);
 
-            while(!glfwWindowShouldClose(_Window.get())){
-                glfwSwapBuffers(_Window.get());
-                glfwPollEvents();
-            }
-        }
+        /**
+         * Process the inputs
+        */
+        void processInput();
 
         /**
          * Quit the game
@@ -142,6 +144,69 @@ class Game{
             if(_Window) _Window.reset();
         }
 
+        /**
+         * Set the clear color
+         * @param r The red component
+         * @param g The green component
+         * @param b The blue component
+         * @param a The alpha component
+        */
+        void setClearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f) const {
+            glClearColor(r,g,b,a);
+        }
+
+        /**
+         * Set the wireframe mode
+        */
+        void setWireframeMode() const {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+
+        /**
+         * Unset the wireframe mode
+        */
+        void unsetWireframeMode() const {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+
+    private:
+        // INPUT PROCESS - CALLBACKS
+        /**
+         * The command to quit
+        */
+        void quitCommand() const {
+            glfwSetWindowShouldClose(_Window.get(), GLFW_TRUE);
+        }
+
+        /**
+         * The command to turn on and off the wireframe
+        */
+        void wireframeSwitchCommand(){
+            if(!_IsWireframeOn){
+                unsetWireframeMode();
+                _IsWireframeOn = GLFW_FALSE;
+            } else {
+                setWireframeMode();
+                _IsWireframeOn = GLFW_TRUE;
+            }
+        }
+
+    private:
+        /**
+         * Check if a given key is press
+         * @return True if it is
+        */
+        bool isPress(GLuint key) const {
+            return glfwGetKey(_Window.get(), key) == GLFW_PRESS;
+        }
+
+        /**
+         * Check if a given key is release
+         * @return True if it is
+        */
+        bool isRelease(GLuint key) const {
+            return glfwGetKey(_Window.get(), key) == GLFW_RELEASE;
+        }
 };
 
 #endif

@@ -10,7 +10,9 @@
 int main(int argc, char** argv){
 
     Game game(800,600,"SolarSystem");
-    game.run();
+    Shaders shader("shaders/vert.glsl", "shaders/frag.glsl");
+
+    game.run(shader);
     game.quit();
 
     exit(EXIT_SUCCESS);

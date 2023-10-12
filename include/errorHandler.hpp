@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <iostream>
 
+#include <glad/gl.h>
+
 /**
  * @enum The different error codes
 */
@@ -11,7 +13,11 @@ enum ErrorCodes{
     NO_ERROR, 
     GLAD_ERROR,
     GLFW_ERROR,
-    NOT_INITALIZED
+    GL_ERROR,
+    NOT_INITALIZED,
+    READ_FILE_ERROR,
+    COMPILE_ERROR,
+    LINK_ERROR,
 };
 
 /**
@@ -37,6 +43,18 @@ class ErrorHandler{
                     std::cerr << "Exiting the program!" << std::endl;
                     exit(EXIT_FAILURE);
                     break;
+            }
+        }
+
+        /**
+         * Handle an OpenGL error
+         * @param format The error message
+        */
+        static void handleGL(const char* format, ...){
+            GLenum error = glGetError();
+            if(error != GL_NO_ERROR){
+                fprintf(stderr, "%s", format);
+                handle(GL_ERROR);
             }
         }
 

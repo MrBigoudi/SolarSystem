@@ -3,11 +3,17 @@ cmake_minimum_required(VERSION 3.10)
 # project name
 project(SolarSystem)
 
-# executable
-add_executable(${PROJECT_NAME} main.cpp)
-
 # create compile command
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# add cpp files
+file(GLOB SOURCES "src/*.cpp")
+
+# add headers
+include_directories(include)
+
+# executable
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 # add glad
 target_include_directories(${PROJECT_NAME} PRIVATE dep/glad/include/)
