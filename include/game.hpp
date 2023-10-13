@@ -9,6 +9,7 @@
 
 #include "errorHandler.hpp"
 #include "shaders.hpp"
+#include "scene.hpp"
 
 class Game;
 
@@ -51,13 +52,14 @@ class Game{
          * @param minor The opengl's minor version (default 3)
          * @param profile The opengl's profile (default core)
         */
-        void initGame(int width, int heigth, const std::string& title, 
-            int major = 3, int minor = 3, int profile = GLFW_OPENGL_CORE_PROFILE){
+        void initGame(int width, int height, const std::string& title, 
+            GLuint major = 3, GLuint minor = 3, GLuint profile = GLFW_OPENGL_CORE_PROFILE, GLuint resizable = GLFW_FALSE){
             ErrorHandler::handle(initGLFW());
             ErrorHandler::handle(setHint(GLFW_CONTEXT_VERSION_MAJOR, major));
             ErrorHandler::handle(setHint(GLFW_CONTEXT_VERSION_MINOR, minor));
             ErrorHandler::handle(setHint(GLFW_OPENGL_PROFILE, profile));
-            ErrorHandler::handle(createWindow(width, heigth, title));
+            ErrorHandler::handle(setHint(GLFW_RESIZABLE, resizable));
+            ErrorHandler::handle(createWindow(width, height, title));
             ErrorHandler::handle(initGLAD());
         }
 
@@ -86,12 +88,13 @@ class Game{
          * @param major The opengl's major version (default 3)
          * @param minor The opengl's minor version (default 3)
          * @param profile The opengl's profile (default core)
+         * @param resizable If the window is resizable (default false)
          * @return The game instance
         */
         static GamePointer init(int width, int height, const std::string& title, 
-            int major = 3, int minor = 3, int profile = GLFW_OPENGL_CORE_PROFILE){
+            GLuint major = 3, GLuint minor = 3, GLuint profile = GLFW_OPENGL_CORE_PROFILE, GLuint resizable = GLFW_FALSE){
             GamePointer gamePtr = getInstance();
-            gamePtr->initGame(width, height, title, major, minor, profile);
+            gamePtr->initGame(width, height, title, major, minor, profile, resizable);
             return gamePtr;
         }
 
@@ -129,7 +132,7 @@ class Game{
          * @return The error code
          * @see ErrorCodes
         */
-        ErrorCodes setHint(int hint, int value) const {
+        ErrorCodes setHint(GLuint hint, GLuint value) const {
             glfwWindowHint(hint, value);
 
             int errorCode;
@@ -164,8 +167,9 @@ class Game{
         /**
          * The main loop
          * @param shader The shader to use
+         * @param scene The scene to use
         */
-        void run(const Shaders& shader);
+        void run(const Shaders& shader, const Scene& scene);
 
         /**
          * Quit the game

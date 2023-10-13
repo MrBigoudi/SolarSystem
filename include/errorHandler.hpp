@@ -18,6 +18,7 @@ enum ErrorCodes{
     READ_FILE_ERROR,
     COMPILE_ERROR,
     LINK_ERROR,
+    OUT_OF_RANGE,
 };
 
 /**
