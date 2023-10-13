@@ -169,7 +169,7 @@ class Game{
          * @param shader The shader to use
          * @param scene The scene to use
         */
-        void run(const Shaders& shader, const Scene& scene);
+        void run(const Shaders& shader, Scene& scene);
 
         /**
          * Quit the game

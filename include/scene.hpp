@@ -11,7 +11,10 @@ using Vertices = std::vector<GLfloat>;
 using Colors = std::vector<GLfloat>;
 using Uvs = std::vector<GLfloat>;
 using Normals = std::vector<GLfloat>;
+
 using Indices = std::vector<GLuint>;
+using IndicesData = GLuint*;
+using VboData = GLfloat*;
 
 enum VboType{
     VERTICES = 3,
@@ -71,19 +74,29 @@ class Scene{
         Normals _Normals = {};
 
         /**
-         * The triangle indices
+         * The number of indices
         */
-        Indices _Indices = {};
+        GLuint _NbIndices = 0;
+
+        /**
+         * The real indices
+        */
+        IndicesData _IndicesData;
+
+        /**
+         * The real vbo
+        */
+        VboData _VboData;
+
 
     private:
         /**
          * Create the vbo
          * @return The vbo as a floating point vector
         */
-        std::vector<GLfloat> createVBO() const {
+        void createVBO() {
             const GLuint size = _NbVertices*_NB_ELEMENT_PER_VERTICES;
-            std::vector<GLfloat> vbo(size);
-
+            _VboData = new GLfloat[_NbVertices * _NB_ELEMENT_PER_VERTICES];
 
             for(int i=0; i<_NbVertices; i++){
                 const GLuint idx   = i*_NB_ELEMENT_PER_VERTICES;
@@ -93,52 +106,67 @@ class Scene{
                 const GLuint nIdx  = i*VboType::NORMALS;
 
                 // set the vertices
-                vbo[idx] = _Vertices[vIdx];
-                vbo[idx+1] = _Vertices[vIdx+1];
-                vbo[idx+2] = _Vertices[vIdx+2];
+                _VboData[idx]    = _Vertices[vIdx];
+                _VboData[idx+1]  = _Vertices[vIdx+1];
+                _VboData[idx+2]  = _Vertices[vIdx+2];
                 // set the colors
-                vbo[idx+3] = _Colors[cIdx];
-                vbo[idx+4] = _Colors[cIdx+1];
-                vbo[idx+5] = _Colors[cIdx+2];
-                vbo[idx+6] = _Colors[cIdx+3];
+                _VboData[idx+3]  = _Colors[cIdx];
+                _VboData[idx+4]  = _Colors[cIdx+1];
+                _VboData[idx+5]  = _Colors[cIdx+2];
+                _VboData[idx+6]  = _Colors[cIdx+3];
                 // set the uvs
-                vbo[idx+7] = _Uvs[uvIdx];
-                vbo[idx+8] = _Uvs[uvIdx+1];
+                _VboData[idx+7]  = _Uvs[uvIdx];
+                _VboData[idx+8]  = _Uvs[uvIdx+1];
                 // set the normals
-                vbo[idx+9] = _Normals[nIdx];
-                vbo[idx+10] = _Normals[nIdx+1];
-                vbo[idx+11] = _Normals[nIdx+2];
+                _VboData[idx+9]  = _Normals[nIdx];
+                _VboData[idx+10] = _Normals[nIdx+1];
+                _VboData[idx+11] = _Normals[nIdx+2];
             }
-
-            return vbo;
         }
 
         /**
          * Bind the vbo and put the vertices data in it
         */
-        void sendVBO() const {
+        void sendVBO() {
             if(_Vertices.empty()){
                 fprintf(stderr, "Can't create GPU buffers without vertices!\n");
                 ErrorHandler::handle(ErrorCodes::NOT_INITALIZED);
             }
-            std::vector<GLfloat> vbo = createVBO();
-            
+            // create the vbo
+            createVBO();
+
+            for(int i=0; i<_NbVertices; i++){
+                const GLuint idx = i*_NB_ELEMENT_PER_VERTICES;
+                std::cout << 
+                    _VboData[idx]    << ", " <<
+                    _VboData[idx+1]  << ", " <<
+                    _VboData[idx+2]  << ", " <<
+                    _VboData[idx+3]  << ", " <<
+                    _VboData[idx+4]  << ", " <<
+                    _VboData[idx+5]  << ", " <<
+                    _VboData[idx+6]  << ", " <<
+                    _VboData[idx+7]  << ", " <<
+                    _VboData[idx+8]  << ", " <<
+                    _VboData[idx+9]  << ", " <<
+                    _VboData[idx+10] << ", " <<
+                    _VboData[idx+11] << std::endl;
+            }
+
+            // bind the vbo
             glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(vbo.data()), vbo.data(), GL_DYNAMIC_READ);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(_VboData), _VboData, GL_DYNAMIC_READ);
         }
 
         /**
          * Bind the ebo and put the indices data in it
         */
         void sendEBO() const {
-            if(_Indices.empty()){
+            if(_NbIndices==0){
                 fprintf(stderr, "Can't create GPU buffers without indices!\n");
                 ErrorHandler::handle(ErrorCodes::NOT_INITALIZED);
             }
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_Indices.data()), _Indices.data(), GL_DYNAMIC_READ);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_IndicesData), _IndicesData, GL_DYNAMIC_READ);
         }
 
         /**
@@ -147,23 +175,25 @@ class Scene{
         void sendVAO() const {
             GLsizei size = _NB_ELEMENT_PER_VERTICES * sizeof(float);
             GLvoid* pointer = (void*)0;
+            GLuint id = 0;
             // position attributes
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size, pointer);
-            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(id, VboType::VERTICES, GL_FLOAT, GL_FALSE, size, pointer);
+            glEnableVertexAttribArray(id);
             // color attributes
-            pointer = (void*)(VboType::VERTICES * sizeof(float));
-            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, size, pointer);
-            glEnableVertexAttribArray(1);
+            pointer = reinterpret_cast<GLvoid*>(VboType::VERTICES * sizeof(float));
+            id++;
+            glVertexAttribPointer(id, VboType::COLORS, GL_FLOAT, GL_FALSE, size, pointer);
+            glEnableVertexAttribArray(id);
             // uv attributes
-            pointer = (void*)((VboType::VERTICES + VboType::COLORS) * sizeof(float));
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, size, pointer);
-            glEnableVertexAttribArray(2);
+            pointer = reinterpret_cast<GLvoid*>((VboType::VERTICES + VboType::COLORS) * sizeof(float));
+            id++;
+            glVertexAttribPointer(id, VboType::UVS, GL_FLOAT, GL_FALSE, size, pointer);
+            glEnableVertexAttribArray(id);
             // normals attributes
-            pointer = (void*)((VboType::VERTICES + VboType::COLORS + VboType::UVS) * sizeof(float));
-            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, size, pointer);
-            glEnableVertexAttribArray(3);
-            // unbind
-            glBindVertexArray(0);
+            pointer = reinterpret_cast<GLvoid*>((VboType::VERTICES + VboType::COLORS + VboType::UVS) * sizeof(float));
+            id++;
+            glVertexAttribPointer(id, VboType::NORMALS, GL_FLOAT, GL_FALSE, size, pointer);
+            glEnableVertexAttribArray(id);
         }
 
     private:
@@ -224,7 +254,11 @@ class Scene{
             }
 
             _Vertices = vertices;
-            _Indices = indices;
+            _NbIndices = indices.size();
+            _IndicesData = new GLuint(_NbIndices);
+            for(int i=0; i<_NbIndices; i++){
+                _IndicesData[i] = indices.data()[i];
+            }
             _Colors = colors;
             _Uvs = uvs;
             _Normals = normals;
@@ -237,12 +271,14 @@ class Scene{
             glDeleteVertexArrays(1, &_VAO);
             glDeleteBuffers(1, &_VBO);
             glDeleteBuffers(1, &_EBO);
+            delete _VboData;
+            delete _IndicesData;
         }
 
         /**
          * Initiate the GPU geometry
         */
-        void initGpuGeometry() const {
+        void initGpuGeometry() {
             glBindVertexArray(_VAO);
             sendVBO();
             sendEBO();
@@ -253,7 +289,9 @@ class Scene{
          * Draw the vertices
         */
         void drawElements() const {
-            glDrawElements(GL_TRIANGLES, _Indices.size(), GL_UNSIGNED_INT, 0);
+            glBindVertexArray(_VAO);
+            glDrawElements(GL_TRIANGLES, _NbIndices, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
         }
 
 

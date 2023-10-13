@@ -89,7 +89,7 @@ void Shaders::linkShaders(GLuint vert, GLuint frag, GLuint geom){
     checkID("Can't link shaders before creating the program!\n");
     glAttachShader(_Id, vert);
     glAttachShader(_Id, frag);
-    if(geom != -1) glAttachShader(_Id, frag);
+    if(geom != -1) glAttachShader(_Id, geom);
 
     int success;
     char infoLog[512];

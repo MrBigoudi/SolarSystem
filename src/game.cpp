@@ -1,5 +1,7 @@
 #include "game.hpp"
 #include "GLFW/glfw3.h"
+#include "scene.hpp"
+#include <GL/glext.h>
 
 /**
  * The static instance of the game class
@@ -11,7 +13,7 @@ GamePointer Game::_Instance = GamePointer(nullptr);
  * @param shader The shader to use
  * @param scene The scene to use
 */
-void Game::run(const Shaders& shader, const Scene& scene){
+void Game::run(const Shaders& shader, Scene& scene){
     if(!_Window){
         fprintf(stderr, "Can't run without a GLFW window!\n");
         ErrorHandler::handle(ErrorCodes::NOT_INITALIZED);
@@ -28,7 +30,7 @@ void Game::run(const Shaders& shader, const Scene& scene){
 
     while(!glfwWindowShouldClose(_Window.get())){
         // render
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.use();
         scene.drawElements();
 
