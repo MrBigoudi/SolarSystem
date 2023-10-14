@@ -81,6 +81,18 @@ class Camera{
         }
 
         /**
+         * Set the camera's aspect ratio
+         * @param newRatio The new ratio of the camera
+        */
+        void setRatio(GLfloat newRatio){
+            if(newRatio <= 0){
+                fprintf(stderr, "Aspect ratio must be positive!\n");
+                return;
+            }
+            _Ratio = newRatio;
+        }
+
+        /**
          * Compute the view matrix
          * @return The view matrix
         */

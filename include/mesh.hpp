@@ -1,10 +1,12 @@
 #ifndef __MESH_HPP__
 #define __MESH_HPP__
 
+#include <cstdio>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <vector>
+#include <math.h>
 
 #include "errorHandler.hpp"
 
@@ -19,11 +21,6 @@ using Vbo = std::vector<GLfloat>;
 
 class Mesh;
 using MeshPointer = std::shared_ptr<Mesh>;
-
-enum MeshPrimitive{
-    SPHERE,
-    CUBE,
-};
 
 enum VboType{
     VERTICES = 3,
@@ -200,21 +197,6 @@ class Mesh{
 
 
     public:
-        /**
-         * A constructor to initialize and bind everything
-         * @param vertices The vertices (as x, y, z values)
-         * @param indices The triangle indices
-        */
-        Mesh(Vertices vertices, Indices indices) : Mesh(vertices, indices, {}, {}, {}) {
-        }
-
-        /**
-         * A constructor to initialize a mesh given a primitive shape
-         * @param shape The primitive to model
-        */
-        Mesh(MeshPrimitive shape){
-            // TODO:
-        }
 
         /**
          * A constructor to initialize and bind everything
@@ -224,7 +206,7 @@ class Mesh{
          * @param uvs The vertices' uvs (as u, v values)
          * @param normals The vertices' normals (as nx, ny, nz values)
         */
-        Mesh(Vertices vertices, Indices indices, Colors colors, Uvs uvs = {}, Normals normals = {}) : Mesh() {
+        Mesh(Vertices vertices, Indices indices, Colors colors = {}, Uvs uvs = {}, Normals normals = {}) : Mesh() {
             // fill if empty lists
             if(vertices.empty()){
                 fprintf(stderr, "Vertices can't be empty!\n");
@@ -235,21 +217,21 @@ class Mesh{
                 ErrorHandler::handle(ErrorCodes::OUT_OF_RANGE);
             }
             _NbVertices = vertices.size() / VboType::VERTICES;
-            if(normals.empty()) normals = Normals(_NbVertices*VboType::NORMALS, 0.0f);
-            if(colors.empty()) colors = Colors(_NbVertices*VboType::COLORS, 0.0f);
+            if(colors.empty()) colors = Colors(_NbVertices*VboType::COLORS, 1.0f);
             if(uvs.empty()) uvs     = Uvs(_NbVertices*VboType::UVS, 0.0f);
+            if(normals.empty()) normals = Normals(_NbVertices*VboType::NORMALS, 0.0f);
 
             // check sizes
             if(colors.size() != _NbVertices*VboType::COLORS){
                 fprintf(stderr, "The number of colors should correspond to the number of vertices! Given %d, expected: %d!\n", (int)colors.size(), _NbVertices*VboType::COLORS);
                 ErrorHandler::handle(ErrorCodes::OUT_OF_RANGE);
             }
-            if(normals.size() != _NbVertices*VboType::NORMALS){
-                fprintf(stderr, "The number of normals should correspond to the number of vertices! Given %d, expected: %d!\n", (int)normals.size(), _NbVertices*VboType::NORMALS);
-                ErrorHandler::handle(ErrorCodes::OUT_OF_RANGE);
-            }
             if(uvs.size() != _NbVertices*VboType::UVS){
                 fprintf(stderr, "The number of uvs should correspond to the number of vertices! Given %d, expected: %d!\n", (int)uvs.size(), _NbVertices*VboType::UVS);
+                ErrorHandler::handle(ErrorCodes::OUT_OF_RANGE);
+            }
+            if(normals.size() != _NbVertices*VboType::NORMALS){
+                fprintf(stderr, "The number of normals should correspond to the number of vertices! Given %d, expected: %d!\n", (int)normals.size(), _NbVertices*VboType::NORMALS);
                 ErrorHandler::handle(ErrorCodes::OUT_OF_RANGE);
             }
 
@@ -287,6 +269,62 @@ class Mesh{
             glBindVertexArray(_VAO);
             glDrawElements(GL_TRIANGLES, _NbIndices, GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
+        }
+
+
+        /**
+         * Generate a unit sphere of a given resolution
+         * @param resolution The sphere resolution
+         * @return A new mesh
+        */
+        static MeshPointer unitSphere(uint resolution = 16){
+            if(resolution<3){
+                fprintf(stderr, "The resolution of a sphere must be at least 3!\n");
+                ErrorHandler::handle(ErrorCodes::BAD_VALUE);
+            }
+
+            Indices indices;
+            Vertices vertices;
+
+            const float PI = 3.1416f;
+            const float stepPhi = PI / resolution;
+            const float stepTheta = 2 * PI / resolution;
+            float phi = 0.0f;
+
+            // Generate vertices
+            for (int i = 0; i <= resolution; i++) {
+                phi += stepPhi;
+                float theta = 0.0f;
+                for (int j = 0; j <= resolution; j++) {
+                    theta += stepTheta;
+
+                    float x = sin(theta)*sin(phi);
+                    float y = cos(phi);
+                    float z = cos(theta)*sin(phi);
+
+                    vertices.push_back(x);
+                    vertices.push_back(y);
+                    vertices.push_back(z);
+                }
+            }
+
+            // Generate indices
+            for (int i = 0; i < resolution; i++) {
+                for (int j = 0; j < resolution; j++) {
+                    int first = i * (resolution + 1) + j;
+                    int second = first + resolution + 1;
+
+                    indices.push_back(first);
+                    indices.push_back(second);
+                    indices.push_back(first + 1);
+
+                    indices.push_back(second);
+                    indices.push_back(second + 1);
+                    indices.push_back(first + 1);
+                }
+            }
+
+            return MeshPointer(new Mesh(vertices, indices));
         }
 
 };

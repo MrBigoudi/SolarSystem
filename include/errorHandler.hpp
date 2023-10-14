@@ -20,6 +20,7 @@ enum ErrorCodes{
     COMPILE_ERROR,
     LINK_ERROR,
     OUT_OF_RANGE,
+    BAD_VALUE,
 };
 
 /**
