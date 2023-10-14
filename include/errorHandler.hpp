@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <glad/gl.h>
+#include <stdarg.h>
 
 /**
  * @enum The different error codes
@@ -53,8 +54,11 @@ class ErrorHandler{
         */
         static void handleGL(const char* format, ...){
             GLenum error = glGetError();
-            if(error != GL_NO_ERROR){
-                fprintf(stderr, "%s", format);
+            if (error != GL_NO_ERROR) {
+                va_list args;
+                va_start(args, format);
+                vfprintf(stderr, format, args);
+                va_end(args);
                 handle(GL_ERROR);
             }
         }

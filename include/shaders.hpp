@@ -2,12 +2,19 @@
 #define __SHADERS_HPP__
 
 #include <glad/gl.h>
+#include <memory>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
 #include "errorHandler.hpp"
+
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+
+class Shaders;
+using ShadersPointer = std::shared_ptr<Shaders>;
 
 /**
  * @enum The different type of shaders
@@ -81,6 +88,17 @@ class Shaders{
         void setFloat(const std::string& name, float val) const {
             checkID("Can't set a uniform value before creating the program!\n");
             glUniform1f(glGetUniformLocation(_Id, name.c_str()), (GLuint)val);
+            ErrorHandler::handleGL("Failed to set %s!\n", name.c_str());
+        }
+
+        /**
+         * Set a uniform 4x4 float matrix
+         * @param name The variable's name
+         * @param val The variable's value
+        */
+        void setMat4f(const std::string& name, const glm::mat4x4& val) const {
+            checkID("Can't set a uniform value before creating the program!\n");
+            glUniformMatrix4fv(glGetUniformLocation(_Id, name.c_str()), 1, GL_FALSE, glm::value_ptr(val));
             ErrorHandler::handleGL("Failed to set %s!\n", name.c_str());
         }
 

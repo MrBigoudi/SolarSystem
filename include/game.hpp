@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "errorHandler.hpp"
-#include "shaders.hpp"
 #include "scene.hpp"
 
 class Game;
@@ -61,6 +60,8 @@ class Game{
             ErrorHandler::handle(setHint(GLFW_RESIZABLE, resizable));
             ErrorHandler::handle(createWindow(width, height, title));
             ErrorHandler::handle(initGLAD());
+            glEnable(GL_DEPTH_TEST);
+            ErrorHandler::handleGL("Failed to enable GL_DEPTH_TEST!");
         }
 
     public:
@@ -166,10 +167,9 @@ class Game{
 
         /**
          * The main loop
-         * @param shader The shader to use
-         * @param scene The scene to use
+         * @param scene The scene to render
         */
-        void run(const Shaders& shader, Scene& scene);
+        void run(const Scene& scene) const;
 
         /**
          * Quit the game
