@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 #include "mesh.hpp"
 #include "shaders.hpp"
@@ -42,6 +43,7 @@ int main(int argc, char** argv){
     // MeshPointer mesh(new Mesh(vertices, indices, colors));
     MeshPointer sphere = Mesh::unitSphere();
     // scene.addMesh(mesh);
+    // sphere->print(std::cout);
     scene.addMesh(sphere);
 
     game->run(scene);

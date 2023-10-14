@@ -5,10 +5,13 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <memory>
+#include <ostream>
 #include <vector>
 #include <math.h>
+#include <glm/glm.hpp>
 
 #include "errorHandler.hpp"
+#include "glm/geometric.hpp"
 
 using Vertices = std::vector<GLfloat>;
 using Colors = std::vector<GLfloat>;
@@ -274,10 +277,12 @@ class Mesh{
 
         /**
          * Generate a unit sphere of a given resolution
-         * @param resolution The sphere resolution
+         * @param radius The sphere's radius
+         * @param center The sphere's center
+         * @param resolution The sphere's resolution
          * @return A new mesh
         */
-        static MeshPointer unitSphere(uint resolution = 16){
+        static MeshPointer unitSphere(GLfloat radius = 1.0f, glm::vec3 center = glm::vec3(0.0f), GLuint resolution = 16){
             if(resolution<3){
                 fprintf(stderr, "The resolution of a sphere must be at least 3!\n");
                 ErrorHandler::handle(ErrorCodes::BAD_VALUE);
@@ -285,6 +290,7 @@ class Mesh{
 
             Indices indices;
             Vertices vertices;
+            Normals normals;
 
             const float PI = 3.1416f;
             const float stepPhi = PI / resolution;
@@ -298,9 +304,9 @@ class Mesh{
                 for (int j = 0; j <= resolution; j++) {
                     theta += stepTheta;
 
-                    float x = sin(theta)*sin(phi);
-                    float y = cos(phi);
-                    float z = cos(theta)*sin(phi);
+                    float x = radius*sin(theta)*sin(phi) + center.x;
+                    float y = radius*cos(phi) + center.y;
+                    float z = radius*cos(theta)*sin(phi) + center.z;
 
                     vertices.push_back(x);
                     vertices.push_back(y);
@@ -324,7 +330,50 @@ class Mesh{
                 }
             }
 
-            return MeshPointer(new Mesh(vertices, indices));
+            // Generate normals
+            for(int i=0; i<vertices.size(); i+=3){
+                glm::vec3 vert = glm::vec3(vertices[i], vertices[i+1], vertices[i+2]);
+                glm::vec3 norm = glm::normalize(vert-center);
+                normals.push_back(norm.x);
+                normals.push_back(norm.y);
+                normals.push_back(norm.z);
+            }
+
+            return MeshPointer(new Mesh(vertices, indices, {}, {}, normals));
+        }
+
+
+        /**
+         * Display the mesh
+         * @param stream TO stream in which to display the mesh
+        */
+        void print(std::ostream& stream) const {
+            stream << "Vertices:\n";
+            for(int i=0; i<_NbVertices; i++){
+                stream << _Vertices[VERTICES*i] << " " << _Vertices[VERTICES*i+1] << " " << _Vertices[VERTICES*i+2] << "\n";
+            }
+
+            stream << "\nIndices:\n";
+            for(int i=0; i<_NbIndices; i+=3){
+                stream << _Indices[i] << " " << _Indices[i+1] << " " << _Indices[i+2] << "\n";
+            }
+
+            stream << "\nColors:\n";
+            for(int i=0; i<_NbVertices; i++){
+                stream << _Colors[COLORS*i] << " " << _Colors[COLORS*i+1] << " " << _Colors[COLORS*i+2] << " " << _Colors[COLORS*i+3] << "\n";
+            }
+
+            stream << "\nUvs:\n";
+            for(int i=0; i<_NbVertices; i++){
+                stream << _Uvs[UVS*i] << " " << _Uvs[UVS*i+1] << "\n";
+            }
+
+            stream << "\nNormals:\n";
+            for(int i=0; i<_NbVertices; i++){
+                stream << _Normals[NORMALS*i] << " " << _Normals[NORMALS*i+1] << " " << _Normals[NORMALS*i+2] << "\n";
+            }
+
+            stream << std::endl;
         }
 
 };
