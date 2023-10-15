@@ -5,6 +5,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include "entity.hpp"
+#include "material.hpp"
 #include "mesh.hpp"
 #include "shaders.hpp"
 #include "game.hpp"
@@ -38,13 +40,15 @@ int main(int argc, char** argv){
     CameraPointer camera(new Camera());
     camera->setRatio(((GLfloat)windowWidth)/windowHeight);
 
-    Scene scene(camera, shader);
+    Scene scene(camera);
 
     // MeshPointer mesh(new Mesh(vertices, indices, colors));
     MeshPointer sphere = Mesh::unitSphere();
+    MaterialPointer material(new Material());
+    EntityPointer entity(new Entity(sphere, material, shader));
     // scene.addMesh(mesh);
     // sphere->print(std::cout);
-    scene.addMesh(sphere);
+    scene.addElement(entity);
 
     game->run(scene);
     game->quit();

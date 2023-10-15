@@ -1,6 +1,7 @@
 #ifndef __CAMERA_HPP__
 #define __CAMERA_HPP__
 
+#include "glm/fwd.hpp"
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <glad/gl.h>
@@ -78,6 +79,14 @@ class Camera{
             _Ratio = ratio;
             _Near = near;
             _Far = far;
+        }
+
+        /**
+         * Get the position of the camera
+         * @return The position
+        */
+        const glm::vec3 getPosition() const {
+            return _Center;
         }
 
         /**

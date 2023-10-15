@@ -5,11 +5,11 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 
-#include "mesh.hpp"
+#include "entity.hpp"
 #include "camera.hpp"
 #include "shaders.hpp"
 
-using Meshes = std::vector<MeshPointer>;
+using Entities = std::vector<EntityPointer>;
 
 /**
  * A class that handle the scene
@@ -19,52 +19,55 @@ class Scene{
         /**
          * The objects in the scene
         */
-        Meshes _Meshes = {};
+        Entities _Entities = {};
 
         /**
          * The scene's camera
         */
         CameraPointer _Camera = nullptr;
 
-        /**
-         * The scene's shader
-        */
-        ShadersPointer _Shader = nullptr;
-
     public:
         /**
          * A basic constructor
          * @param cam The scene's camera
-         * @param shader The scene's shader
         */
-        Scene(CameraPointer& cam, ShadersPointer& shader){
+        Scene(CameraPointer& cam){
             _Camera = cam;
-            _Shader = shader;
         }
 
         /**
-         * Add a mesh to the scene
-         * @param mesh The mesh to add
+         * Add an entity to the scene
+         * @param entity The entity to add
         */
-        void addMesh(const MeshPointer& mesh){
-            _Meshes.push_back(mesh);
+        void addElement(const EntityPointer& entity){
+            _Entities.push_back(entity);
         }
 
         /**
-         * Initiate all the meshes
+         * Initiate all the entities
         */
         void initMeshes() const {
-            for(auto mesh : _Meshes){
-                mesh->initGpuGeometry();
+            for(auto entity : _Entities){
+                entity->init();
             }
         }
 
         /**
          * Render all the meshes
+         * @cond All the entities must have shaders with "modelMat", "viewMat", "projMat" and "camPos" uniform variables
         */
         void render() const {
-            for(auto mesh : _Meshes){
-                mesh->render();
+            const glm::mat4 model = glm::mat4(1.0f);
+            const glm::mat4 view  = _Camera->getViewMatrix();
+            const glm::mat4 proj  = _Camera->getProjectionMatrix(ProjectionType::PERSP);
+            for(auto entity : _Entities){
+                ShadersPointer shader = entity->getShader();
+                shader->use();
+                shader->setMat4f("modelMat", model);
+                shader->setMat4f("viewMat", view);
+                shader->setMat4f("projMat", proj);
+                shader->setVec3f("camPos", _Camera->getPosition());
+                entity->render();
             }
         }
 
@@ -74,14 +77,6 @@ class Scene{
         */
         const CameraPointer getCamera() const {
             return _Camera;
-        }
-
-        /**
-         * Get the shader
-         * @return The shader as a const
-        */
-        const ShadersPointer getShader() const {
-            return _Shader;
         }
 };
 

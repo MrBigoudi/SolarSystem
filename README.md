@@ -16,3 +16,7 @@
 - Using the normals as the colors
 
 ![sphereNormals](report/media/sphereNormals.png)
+
+- Creating the Phong's model
+
+![phongModel](report/media/phong.png)

@@ -97,7 +97,6 @@ class Mesh{
         */
         Vbo _VboData = {};
 
-
     private:
         /**
          * Create the vbo
