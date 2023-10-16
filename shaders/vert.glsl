@@ -16,7 +16,8 @@ uniform mat4 projMat;
 void main(){
     mat4 MVP = projMat * viewMat * modelMat;
     gl_Position = MVP * vec4(vPos, 1.0);
-    fCol = vec4((vNorm + 1.0) / 2.0, 1.0);
+    //fCol = vec4((vNorm + 1.0) / 2.0, 1.0);
+    fCol = vCol;
     fNorm = vNorm;
     fPos = vec3(modelMat*vec4(vPos, 1.0));
 }

@@ -64,6 +64,7 @@ class Shaders{
          * @param val The variable's value
         */
         void setBool(const std::string& name, bool val) const {
+            use();
             checkID("Can't set a uniform value before creating the program!\n");
             glUniform1i(glGetUniformLocation(_Id, name.c_str()), (GLuint)val);
             ErrorHandler::handleGL("Failed to set %s!\n", name.c_str());
@@ -75,6 +76,7 @@ class Shaders{
          * @param val The variable's value
         */
         void setInt(const std::string& name, int val) const {
+            use();
             checkID("Can't set a uniform value before creating the program!\n");
             glUniform1i(glGetUniformLocation(_Id, name.c_str()), (GLuint)val);
             ErrorHandler::handleGL("Failed to set %s!\n", name.c_str());
@@ -86,6 +88,7 @@ class Shaders{
          * @param val The variable's value
         */
         void setFloat(const std::string& name, float val) const {
+            use();
             checkID("Can't set a uniform value before creating the program!\n");
             glUniform1f(glGetUniformLocation(_Id, name.c_str()), (GLuint)val);
             ErrorHandler::handleGL("Failed to set %s!\n", name.c_str());
@@ -97,6 +100,7 @@ class Shaders{
          * @param val The variable's value
         */
         void setMat4f(const std::string& name, const glm::mat4x4& val) const {
+            use();
             checkID("Can't set a uniform value before creating the program!\n");
             glUniformMatrix4fv(glGetUniformLocation(_Id, name.c_str()), 1, GL_FALSE, glm::value_ptr(val));
             ErrorHandler::handleGL("Failed to set %s!\n", name.c_str());
@@ -108,8 +112,21 @@ class Shaders{
          * @param val The variable's value
         */
         void setVec3f(const std::string& name, const glm::vec3& val) const {
+            use();
             checkID("Can't set a uniform value before creating the program!\n");
             glUniform3fv(glGetUniformLocation(_Id, name.c_str()), 1, glm::value_ptr(val));
+            ErrorHandler::handleGL("Failed to set %s!\n", name.c_str());
+        }
+
+        /**
+         * Set a uniform 4x1 float vector
+         * @param name The variable's name
+         * @param val The variable's value
+        */
+        void setVec4f(const std::string& name, const glm::vec4& val) const {
+            use();
+            checkID("Can't set a uniform value before creating the program!\n");
+            glUniform4fv(glGetUniformLocation(_Id, name.c_str()), 1, glm::value_ptr(val));
             ErrorHandler::handleGL("Failed to set %s!\n", name.c_str());
         }
 

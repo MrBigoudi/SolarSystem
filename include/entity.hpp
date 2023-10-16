@@ -62,6 +62,14 @@ class Entity {
         }
 
         /**
+         * Get the mesh
+         * @return A pointer to the mesh
+        */
+        MeshPointer getMesh() const {
+            return _Mesh;
+        }
+
+        /**
          * Render the entity
          * @cond The shader must have a "modelMat" uniform 4x4 matrix
         */

@@ -246,6 +246,20 @@ class Mesh{
         }
 
         /**
+         * A basic shallow copy constructor
+         * @param mesh The mesh to copy
+        */
+        Mesh(const MeshPointer& mesh) : Mesh(){
+            _NbVertices = mesh->_NbVertices;
+            _Vertices = mesh->_Vertices;
+            _NbIndices = mesh->_NbIndices;
+            _Indices = mesh->_Indices;
+            _Colors = mesh->_Colors;
+            _Uvs = mesh->_Uvs;
+            _Normals = mesh->_Normals;
+        }
+
+        /**
          * A basic destructor
         */
         ~Mesh(){
@@ -373,6 +387,21 @@ class Mesh{
             }
 
             stream << std::endl;
+        }
+
+        /**
+         * Set a unique color for all the vertices
+         * @param color The color to set
+        */
+        void setSimpleColor(glm::vec4 color){
+            Colors newColors = Colors(_Colors.size());
+            for(int i=0; i<_NbVertices; i++){
+                newColors[i*VboType::COLORS]   = color.r;
+                newColors[i*VboType::COLORS+1] = color.g;
+                newColors[i*VboType::COLORS+2] = color.b;
+                newColors[i*VboType::COLORS+3] = color.a;
+            }
+            _Colors = newColors;
         }
 
 };
