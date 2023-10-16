@@ -51,7 +51,7 @@ class Camera{
         /**
          * The distance after which the geometry is excluded from the rasterization process
         */
-        GLfloat _Far = 10.f;
+        GLfloat _Far = 100.f;
 
 
     public:
@@ -87,6 +87,22 @@ class Camera{
         */
         const glm::vec3 getPosition() const {
             return _Center;
+        }
+
+        /**
+         * Move the camera to a given position
+         * @param newPos The new camera position
+        */
+        void moveTo(const glm::vec3& newPos){
+            _Center = newPos;
+        }
+
+        /**
+         * Set the camera's targer
+         * @param target The new camera's target
+        */
+        void setTarget(const glm::vec3& target){
+            _At = target;
         }
 
         /**

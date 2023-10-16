@@ -54,7 +54,7 @@ class Scene{
 
         /**
          * Render all the meshes
-         * @cond All the entities must have shaders with "modelMat", "viewMat", "projMat" and "camPos" uniform variables
+         * @cond All the entities must have shaders with "viewMat", "projMat" and "camPos" uniform variables
         */
         void render() const {
             const glm::mat4 model = glm::mat4(1.0f);
@@ -63,7 +63,6 @@ class Scene{
             for(auto entity : _Entities){
                 ShadersPointer shader = entity->getShader();
                 shader->use();
-                shader->setMat4f("modelMat", model);
                 shader->setMat4f("viewMat", view);
                 shader->setMat4f("projMat", proj);
                 shader->setVec3f("camPos", _Camera->getPosition());

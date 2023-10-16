@@ -33,6 +33,11 @@ class Entity {
         */
         ShadersPointer _Shader = nullptr;
 
+        /**
+         * The entity's model matrix
+        */
+        glm::mat4 _Model = glm::mat4(1.0f);
+
 
     public:
         /**
@@ -40,11 +45,13 @@ class Entity {
          * @param mesh The entity's mesh
          * @param material The entity's material
          * @param shader The entity's shader
+         * @param model The entity's model matrix
         */
-        Entity(const MeshPointer& mesh, const MaterialPointer& material, const ShadersPointer& shader){
+        Entity(const MeshPointer& mesh, const MaterialPointer& material, const ShadersPointer& shader, const glm::mat4& model){
             _Mesh = mesh;
             _Material = material;
             _Shader = shader;
+            _Model = model;
         }
 
         /**
@@ -56,8 +63,12 @@ class Entity {
 
         /**
          * Render the entity
+         * @cond The shader must have a "modelMat" uniform 4x4 matrix
         */
         void render() const {
+            // set the model matrix in the gpu
+            _Shader->use();
+            _Shader->setMat4f("modelMat", _Model);
             _Material->setShaderValues(_Shader);
             _Mesh->render();
         }
