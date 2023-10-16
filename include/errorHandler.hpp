@@ -8,6 +8,14 @@
 #include <stdarg.h>
 
 /**
+ * @enum The level of the error
+*/
+enum ErrorLevel{
+    FATAL,
+    WARNING,
+};
+
+/**
  * @enum The different error codes
 */
 enum ErrorCodes{
@@ -21,6 +29,7 @@ enum ErrorCodes{
     LINK_ERROR,
     OUT_OF_RANGE,
     BAD_VALUE,
+    WRONG_TYPE,
 };
 
 /**
@@ -37,15 +46,22 @@ class ErrorHandler{
         /**
          * Handle the error
          * @param error The error to handle
+         * @param level The error level
         */
-        static void handle(ErrorCodes error){
+        static void handle(ErrorCodes error, ErrorLevel level = FATAL){
             switch(error){
                 case NO_ERROR:
                     break;
                 default:
-                    std::cerr << "Exiting the program!" << std::endl;
-                    exit(EXIT_FAILURE);
-                    break;
+                    if(level == FATAL){
+                        std::cerr << "Exiting the program!" << std::endl;
+                        exit(EXIT_FAILURE);
+                        break;
+                    }
+                    if(level == WARNING){
+                        std::cerr << "Warning, continue the program!" << std::endl;
+                        break;
+                    }
             }
         }
 

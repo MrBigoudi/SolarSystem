@@ -70,6 +70,14 @@ class Entity {
         }
 
         /**
+         * Get the material
+         * @return A pointer to the material
+        */
+        MaterialPointer getMaterial() const {
+            return _Material;
+        }
+
+        /**
          * Render the entity
          * @cond The shader must have a "modelMat" uniform 4x4 matrix
         */

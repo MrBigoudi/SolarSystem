@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <memory>
+#include "errorHandler.hpp"
 #include "glad/gl.h"
 #include "shaders.hpp"
 
@@ -16,6 +17,11 @@ using MaterialPointer = std::shared_ptr<Material>;
 class Material{
 
     private:
+        /**
+         * The ambient local illumination
+        */
+        GLfloat _Ambient = 0.0f;
+        
         /**
          * The diffuse property
         */
@@ -31,11 +37,6 @@ class Material{
         */
         GLfloat _Shininess = 10.0f;
 
-        /**
-         * The ambient local illumination
-        */
-        glm::vec3 _Ambient = glm::vec3(0.f);
-
 
     public:
         /**
@@ -44,13 +45,24 @@ class Material{
         Material(){}
 
         /**
+         * A copy constructor
+         * @param mat The material to copy
+        */
+        Material(const MaterialPointer& mat){
+            _Ambient = mat->_Ambient;
+            _Diffuse = mat->_Diffuse;
+            _Specular = mat->_Specular;
+            _Shininess = mat->_Shininess;
+        }
+
+        /**
          * A basic constructor
          * @param ambient The ambient property
          * @param diffuse The diffuse property
          * @param specular The specular property
          * @param shininess The shininess property
         */
-        Material(const glm::vec3& ambient, GLfloat diffuse, GLfloat specular, GLfloat shininess){
+        Material(GLfloat ambient, GLfloat diffuse, GLfloat specular, GLfloat shininess){
             _Ambient = ambient;
             _Diffuse = diffuse;
             _Specular = specular;
@@ -64,10 +76,23 @@ class Material{
         */
         void setShaderValues(const ShadersPointer& shader){
             shader->use();
-            shader->setVec3f("fAmbient", _Ambient);
+            shader->setFloat("fAmbient", _Ambient);
             shader->setFloat("fDiffuse", _Diffuse);
             shader->setFloat("fSpecular", _Specular);
             shader->setFloat("fShininess", _Shininess);
+        }
+
+        /**
+         * Set the ambient value
+         * @param ambient The ambient value
+        */
+        void setAmbient(GLfloat ambient){
+            if(ambient < 0){
+                fprintf(stderr, "Can't set a negative ambient value!\n");
+                ErrorHandler::handle(ErrorCodes::BAD_VALUE, ErrorLevel::WARNING);
+                return;
+            }
+            _Ambient = ambient;
         }
 };
 

@@ -20,3 +20,7 @@
 - Creating the Phong's model
 
 ![phongModel](report/media/phong.png)
+
+- Adding multiple planets and setting their properties
+
+![solarSystem](report/media/lights.png)
