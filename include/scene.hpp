@@ -3,6 +3,7 @@
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,9 @@
 using Entities = std::vector<EntityPointer>;
 using PointLights = std::vector<LightPointer>;
 using DirectonalLights = std::vector<LightPointer>;
+
+class Scene;
+using ScenePointer = std::shared_ptr<Scene>;
 
 /**
  * A class that handle the scene
@@ -133,16 +137,25 @@ class Scene{
         }
 
         /**
+         * Update the entities
+         * @param dt The delta time
+        */
+        void update(GLfloat dt) const {
+            for(auto entity : _Entities){
+                entity->update(dt);
+            }
+        }
+
+        /**
          * Render all the meshes
          * @cond All the entities must have shaders with "viewMat", "projMat" and "camPos" uniform variables
          * @cond Shaders must have the correct light uniform variables
         */
         void render() const {
             // get the coordinate matrices
-            const glm::mat4 model = glm::mat4(1.0f);
             const glm::mat4 view  = _Camera->getViewMatrix();
             const glm::mat4 proj  = _Camera->getProjectionMatrix(ProjectionType::PERSP);
-
+            
             // render the enetities
             for(auto entity : _Entities){
                 ShadersPointer shader = entity->getShader();

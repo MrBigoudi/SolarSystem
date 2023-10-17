@@ -13,11 +13,20 @@ uniform mat4 modelMat;
 uniform mat4 viewMat;
 uniform mat4 projMat;
 
-void main(){
+vec4 getPositions(){
     mat4 MVP = projMat * viewMat * modelMat;
-    gl_Position = MVP * vec4(vPos, 1.0);
+    return MVP * vec4(vPos, 1.0);
+}
+
+vec3 getNormals(){
+    mat3 normalMatrix = transpose(inverse(mat3(modelMat)));
+    return normalize(normalMatrix * vNorm);
+}
+
+void main(){
+    gl_Position = getPositions();
     //fCol = vec4((vNorm + 1.0) / 2.0, 1.0);
     fCol = vCol;
-    fNorm = vNorm;
+    fNorm = getNormals();
     fPos = vec3(modelMat*vec4(vPos, 1.0));
 }

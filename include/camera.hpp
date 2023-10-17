@@ -12,6 +12,12 @@ class Camera;
 using CameraPointer = std::shared_ptr<Camera>;
 
 enum ProjectionType{ORTHO, PERSP};
+enum CameraMovement{
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN,
+};
 
 /**
  * A class representing the camera
@@ -52,6 +58,11 @@ class Camera{
          * The distance after which the geometry is excluded from the rasterization process
         */
         GLfloat _Far = 100.f;
+
+        /**
+         * The camera's speed
+        */
+        GLfloat _Speed = 2.5f;
 
 
     public:
@@ -165,6 +176,57 @@ class Camera{
                     << "Ratio: " << _Ratio << "\n"
                     << "Near: " << _Near << "\n"
                     << "Far: " << _Far << std::endl;
+        }
+
+        /**
+         * Set the fov
+         * @param newFov The new fov
+        */
+        void setFov(GLfloat newFov){
+            if (newFov <= 1.0f)
+                _Fov = 1.0f;
+            if (newFov >= 45.0f)
+                _Fov = 45.0f; 
+            _Fov = newFov;
+        }
+
+        /**
+         * Get the fov
+         * @return The fov as a constant
+        */
+        const GLfloat getFov() const {
+            return _Fov;
+        }
+
+        /**
+         * Move the camera
+         * @param direction The movement direction
+         * @param dt The 
+        */
+        void move(CameraMovement direction, GLfloat dt){
+            float velocity = _Speed * dt;
+
+            glm::vec3 front = glm::normalize(_At - _Center);
+            glm::vec3 right = glm::normalize(glm::cross(front, _Up));
+
+            switch(direction){
+                case DOWN:
+                    _Center += _Up * velocity;
+                    _At += _Up * velocity;
+                    break;
+                case UP:
+                    _Center -= _Up * velocity;
+                    _At -= _Up * velocity;
+                    break;
+                case RIGHT:
+                    _Center += right * velocity;
+                    _At += right * velocity;
+                    break;
+                case LEFT:
+                    _Center -= right * velocity;
+                    _At -= right * velocity;
+                    break;
+            }
         }
 };
 

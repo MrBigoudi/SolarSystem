@@ -21,6 +21,24 @@ const static float kSizeEarth = 0.5;
 const static float kSizeMoon = 0.25;
 const static float kRadOrbitEarth = 10;
 const static float kRadOrbitMoon = 2;
+const static float kEarthRotationAxe = 23.5f;
+const static float kEarthRotationSpeed = 0.1f;
+const static float kMoonRotationAxe = 0.f;
+const static float kMoonRotationSpeed = 0.5f;
+
+glm::mat4 earthRotation(GLfloat dt, const glm::mat4& model){
+    GLfloat theta = glm::radians(kEarthRotationAxe);
+    glm::vec3 rotationAxis = glm::vec3(cos(theta), sin(theta), 0.0f);
+    glm::mat4 rotation = glm::rotate(model, kEarthRotationSpeed, rotationAxis);
+    return rotation;
+};
+
+glm::mat4 moonRotation(GLfloat dt, const glm::mat4& model){
+    GLfloat theta = glm::radians(kMoonRotationAxe);
+    glm::vec3 rotationAxis = glm::vec3(cos(theta), sin(theta), 0.0f);
+    glm::mat4 rotation = glm::rotate(model, kMoonRotationSpeed, rotationAxis);
+    return rotation;
+};
 
 int main(int argc, char** argv){
 
@@ -52,6 +70,7 @@ int main(int argc, char** argv){
     sunMesh->setSimpleColor(sunColor);
     sunMaterial->setAmbient(1.0f);
     EntityPointer sun(new Entity(sunMesh, sunMaterial, shader, sunModel));
+    //sun->setUpdateFct(rotation);
 
     // create the planes
     MaterialPointer planetMaterial(new Material());
@@ -59,22 +78,25 @@ int main(int argc, char** argv){
     glm::vec4 earthColor = glm::vec4(0.,1.,0.2,1.);
     earthMesh->setSimpleColor(earthColor);
     EntityPointer earth(new Entity(earthMesh, planetMaterial, shader, earthModel));
+    earth->setUpdateFct(earthRotation);
 
     glm::vec4 moonColor = glm::vec4(1.,1.,1.,1.);
     moonMesh->setSimpleColor(moonColor);
     EntityPointer moon(new Entity(moonMesh, planetMaterial, shader, moonModel));
+    moon->setUpdateFct(moonRotation);
 
     // create the lights
     LightPointer sunLight(new Light(LightType::PointLight, glm::vec3(), glm::vec3(1.0,1.0,1.0), sunModel));
     
     // create the scene
-    Scene scene(camera);
-    scene.addElement(sun);
-    scene.addElement(earth);
-    scene.addElement(moon);
-    scene.addLight(sunLight);
+    ScenePointer scene(new Scene(camera));
+    scene->addElement(sun);
+    scene->addElement(earth);
+    scene->addElement(moon);
+    scene->addLight(sunLight);
 
-    game->run(scene);
+    game->setScene(scene);
+    game->run();
     game->quit();
 
     exit(EXIT_SUCCESS);

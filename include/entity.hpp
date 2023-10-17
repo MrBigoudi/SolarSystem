@@ -1,6 +1,7 @@
 #ifndef __ENTITY_HPP__
 #define __ENTITY_HPP__
 
+#include <functional>
 #include <glm/glm.hpp>
 #include <glad/gl.h>
 #include <memory>
@@ -11,6 +12,7 @@
 
 class Entity;
 using EntityPointer = std::shared_ptr<Entity>;
+using UpdateFct = std::function<glm::mat4(GLfloat dt, const glm::mat4& model)>;
 
 /**
  * A class representing an entity in the scene
@@ -37,6 +39,11 @@ class Entity {
          * The entity's model matrix
         */
         glm::mat4 _Model = glm::mat4(1.0f);
+
+        /**
+         * The entity's updating function
+        */
+        UpdateFct _UpdateFct = [=](GLfloat dt, const glm::mat4& model){return model;};
 
 
     public:
@@ -75,6 +82,31 @@ class Entity {
         */
         MaterialPointer getMaterial() const {
             return _Material;
+        }
+
+        /**
+         * Get the model matrix of the entity
+         * @return A copy of the model matrix
+        */
+        const glm::mat4 getModel() const {
+            return _Model;
+        }
+
+        /**
+         * Set the update function
+         * @param update The function to call on update
+        */
+        void setUpdateFct(UpdateFct update){
+            _UpdateFct = update;
+        }
+
+        /**
+         * Update the entity
+         * @param dt The delta time
+        */
+        void update(GLfloat dt){
+            //_Shader->setMat4f("modelMat", _UpdateFct(dt, _Model));
+            _Model = _UpdateFct(dt, _Model);
         }
 
         /**

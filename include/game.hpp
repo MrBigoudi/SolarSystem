@@ -36,6 +36,29 @@ class Game{
         */
         static GamePointer _Instance;
 
+        /**
+         * The game's scene
+        */
+        ScenePointer _Scene = nullptr;
+
+        /**
+         * The delta time
+        */
+        GLfloat _Dt = 0.0f;
+
+        /**
+         * The last time frame
+        */
+        GLfloat _LastTimeFrame = 0.0f;
+
+        /**
+         * Boolean to check the press keys
+        */
+        bool _KeyLeftPressed = false;
+        bool _KeyRightPressed = false;
+        bool _KeyUpPressed = false;
+        bool _KeyDownPressed = false;
+
     private:
         /**
          * An empty constructor
@@ -166,10 +189,28 @@ class Game{
         }
 
         /**
-         * The main loop
-         * @param scene The scene to render
+         * Set the scene
+         * @param scene The scene to set
         */
-        void run(const Scene& scene) const;
+        void setScene(const ScenePointer& scene){
+            if(scene) _Scene = scene;
+        }
+
+        /**
+         * The main loop
+        */
+        void run();
+
+        /**
+         * Update the delta time
+        */
+        void update(){
+            GLfloat curTime = glfwGetTime();
+            _Dt = curTime - _LastTimeFrame;
+            _LastTimeFrame = curTime;
+            // update the camera
+            updateCamera();
+        }
 
         /**
          * Quit the game
@@ -205,7 +246,7 @@ class Game{
         }
 
         /**
-         * Process the inpu
+         * Process the inputs
          * @param window The game's window
          * @param key The keyboard key that was pressed or released
          * @param scancode The system specific scancode of the key
@@ -213,6 +254,21 @@ class Game{
          * @param mods Bit field describing which modifier keys were held down
         */
         static void inputCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+        /**
+         * Process the scrolls
+         * @param window The game's window
+         * @param xoffset The x offset
+         * @param yoffset The y offset
+        */
+        static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset){
+            GLfloat fov = getInstance()->_Scene->getCamera()->getFov() - (GLfloat)yoffset;
+            if (fov < 1.0f)
+                fov = 1.0f;
+            if (fov > 45.0f)
+                fov = 45.0f; 
+            getInstance()->_Scene->getCamera()->setFov(fov);
+        }
 
     private:
         // INPUT PROCESS - CALLBACKS
@@ -233,6 +289,24 @@ class Game{
             } else {
                 unsetWireframeMode();
                 _IsWireframeOn = GLFW_FALSE;
+            }
+        }
+
+        /**
+         * Update the camera
+        */
+        void updateCamera() const {
+            if (_KeyLeftPressed) {
+                _Scene->getCamera()->move(CameraMovement::LEFT, _Dt);
+            }
+            if (_KeyRightPressed) {
+                _Scene->getCamera()->move(CameraMovement::RIGHT, _Dt);
+            }
+            if (_KeyUpPressed) {
+                _Scene->getCamera()->move(CameraMovement::UP, _Dt);
+            }
+            if (_KeyDownPressed) {
+                _Scene->getCamera()->move(CameraMovement::DOWN, _Dt);
             }
         }
 };
