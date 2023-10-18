@@ -27,8 +27,7 @@ const static float kMoonRotationAxe = 0.f;
 const static float kMoonRotationSpeed = 0.5f;
 
 glm::mat4 earthRotation(GLfloat dt, const glm::mat4& model){
-    GLfloat theta = glm::radians(kEarthRotationAxe);
-    glm::vec3 rotationAxis = glm::vec3(cos(theta), sin(theta), 0.0f);
+    glm::vec3 rotationAxis = glm::vec3(0.f, 1.f, 0.f);
     glm::mat4 rotation = glm::rotate(model, kEarthRotationSpeed, rotationAxis);
     return rotation;
 };
@@ -62,6 +61,9 @@ int main(int argc, char** argv){
     // setup the model matrices for the planets
     glm::mat4 sunModel   = glm::scale(glm::mat4(1.0f), glm::vec3(kSizeSun));
     glm::mat4 earthModel = glm::scale(glm::translate(sunModel, glm::vec3(kRadOrbitEarth,0.,0.)), glm::vec3(kSizeEarth));
+    // tilt earth
+    GLfloat theta = glm::radians(kEarthRotationAxe);
+    earthModel = glm::rotate(earthModel, kEarthRotationSpeed, glm::vec3(0.f, 0.f, 1.f));
     glm::mat4 moonModel = glm::scale(glm::translate(earthModel, glm::vec3(kRadOrbitMoon,0.,0.)), glm::vec3(kSizeMoon));
 
     // create the suns
@@ -79,11 +81,13 @@ int main(int argc, char** argv){
     earthMesh->setSimpleColor(earthColor);
     EntityPointer earth(new Entity(earthMesh, planetMaterial, shader, earthModel));
     earth->setUpdateFct(earthRotation);
+    earth->loadTexture("media/earth.jpg");
 
     glm::vec4 moonColor = glm::vec4(1.,1.,1.,1.);
     moonMesh->setSimpleColor(moonColor);
     EntityPointer moon(new Entity(moonMesh, planetMaterial, shader, moonModel));
     moon->setUpdateFct(moonRotation);
+    moon->loadTexture("media/moon.jpg");
 
     // create the lights
     LightPointer sunLight(new Light(LightType::PointLight, glm::vec3(), glm::vec3(1.0,1.0,1.0), sunModel));

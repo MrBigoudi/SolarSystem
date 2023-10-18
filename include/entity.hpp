@@ -9,6 +9,7 @@
 #include "mesh.hpp"
 #include "material.hpp"
 #include "shaders.hpp"
+#include "stb_image.h"
 
 class Entity;
 using EntityPointer = std::shared_ptr<Entity>;
@@ -44,6 +45,11 @@ class Entity {
          * The entity's updating function
         */
         UpdateFct _UpdateFct = [=](GLfloat dt, const glm::mat4& model){return model;};
+
+        /**
+         * The texture Id
+        */
+        GLuint _TexId = 0;
 
 
     public:
@@ -129,6 +135,27 @@ class Entity {
             return _Shader;
         }
 
+        /**
+         * Load a texture
+         * @param fileName The texture file
+        */
+        void loadTexture(const std::string& fileName){
+            // Loading the image in CPU memory using stb_image
+            int width, height, numComponents;
+            unsigned char *data = stbi_load(fileName.c_str(), &width, &height, &numComponents, 0);
+            glGenTextures(1, &_TexId); // generate an OpenGL texture container
+            glBindTexture(GL_TEXTURE_2D, _TexId); // activate the texture
+            // Setup the texture filtering option and repeat mode; check www.opengl.org for details.
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            // Fill the GPU texture with the data stored in the CPU image
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            // Free useless CPU memory
+            stbi_image_free(data);
+            glBindTexture(GL_TEXTURE_2D, 0); // unbind the texture
+        }
 };
 
 #endif

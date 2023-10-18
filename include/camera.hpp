@@ -62,7 +62,7 @@ class Camera{
         /**
          * The camera's speed
         */
-        GLfloat _Speed = 2.5f;
+        GLfloat _Speed = 10.f;
 
 
     public:
@@ -210,11 +210,11 @@ class Camera{
             glm::vec3 right = glm::normalize(glm::cross(front, _Up));
 
             switch(direction){
-                case DOWN:
+                case UP:
                     _Center += _Up * velocity;
                     _At += _Up * velocity;
                     break;
-                case UP:
+                case DOWN:
                     _Center -= _Up * velocity;
                     _At -= _Up * velocity;
                     break;

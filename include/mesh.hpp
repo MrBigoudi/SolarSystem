@@ -304,11 +304,14 @@ class Mesh{
             Indices indices;
             Vertices vertices;
             Normals normals;
+            Uvs uvs;
 
             const float PI = 3.1416f;
             const float stepPhi = PI / resolution;
             const float stepTheta = 2 * PI / resolution;
             float phi = 0.0f;
+
+            int nbVertices = 0;
 
             // Generate vertices
             for (int i = 0; i <= resolution; i++) {
@@ -324,6 +327,7 @@ class Mesh{
                     vertices.push_back(x);
                     vertices.push_back(y);
                     vertices.push_back(z);
+                    nbVertices++;
                 }
             }
 
@@ -351,6 +355,12 @@ class Mesh{
                 normals.push_back(norm.y);
                 normals.push_back(norm.z);
             }
+
+            // Generate textures
+            for(int i=0; i<nbVertices; i++){
+                
+            }
+
 
             return MeshPointer(new Mesh(vertices, indices, {}, {}, normals));
         }
