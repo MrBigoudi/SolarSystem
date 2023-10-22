@@ -1,11 +1,13 @@
 #ifndef __LIGHT_HPP__
 #define __LIGHT_HPP__
 
-#include "glm/fwd.hpp"
+#include "errorHandler.hpp"
 #include "shaders.hpp"
 #include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <memory>
+
+#include "entity.hpp"
 
 class Light;
 using LightPointer = std::shared_ptr<Light>;
@@ -37,9 +39,9 @@ class Light{
         LightType _Type = PointLight;
 
         /**
-         * The light's model matrix
+         * The entity containing the light
         */
-        glm::mat4 _Model = glm::mat4(1.0f);
+        EntityPointer _Entity = nullptr;
 
 
     public:
@@ -48,13 +50,13 @@ class Light{
          * @param type The type of light
          * @param pos The light's position
          * @param col The light's color
-         * @param model The light's model matrix
+         * @param entity The entity containing the light
         */
-        Light(LightType type, const glm::vec3& pos, const glm::vec3& col, const glm::mat4& model){
+        Light(LightType type, const glm::vec3& pos, const glm::vec3& col, const EntityPointer& entity){
             _Type = type;
             _Position = pos;
             _Color = col;
-            _Model = model;
+            _Entity = entity;
         }
 
 
@@ -64,9 +66,13 @@ class Light{
          * @param name The name of the light
         */
         void sendGPU(const ShadersPointer& shader, const std::string& name){
+            if(!_Entity){
+                fprintf(stderr, "The entity must be initialized to setup the light!\n");
+                ErrorHandler::handle(ErrorCodes::NOT_INITALIZED);
+            }
             shader->setVec3f(name + ".position", _Position);
             shader->setVec3f(name + ".color", _Color);
-            shader->setMat4f(name + ".model", _Model);
+            shader->setMat4f(name + ".model", _Entity->getModel());
         }
 
         /**
@@ -76,7 +82,6 @@ class Light{
         LightType getType() const {
             return _Type;
         }
-
 };
 
 #endif

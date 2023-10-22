@@ -6,41 +6,37 @@
 #include <iostream>
 
 #include "entity.hpp"
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/fwd.hpp"
-#include "light.hpp"
 #include "material.hpp"
 #include "mesh.hpp"
 #include "shaders.hpp"
 #include "game.hpp"
 #include "scene.hpp"
 #include "camera.hpp"
+#include "planet.hpp"
+#include "sun.hpp"
 
+// sun
 const static float kSizeSun = 1;
+const static glm::vec3 kSunRotationAxis = glm::vec3(0.f, 1.f, 0.f);
+const static float kSunRotationSpeed = 0.01f;
+
+// earth
 const static float kSizeEarth = 0.5;
-const static float kSizeMoon = 0.25;
 const static float kRadOrbitEarth = 10;
+const static glm::vec3 kEarthRotationAxis = glm::vec3(0.f, 23.5f, 0.f);
+const static glm::vec3 kEarthOrbitAxis = glm::vec3(0.f, 1.f, 0.f);
+const static float kEarthRotationSpeed = 0.05f;
+const static float kEarthOrbitSpeed = 0.01f;
+
+// moon
+const static float kSizeMoon = 0.25;
 const static float kRadOrbitMoon = 2;
-const static float kEarthRotationAxe = 23.5f;
-const static float kEarthRotationSpeed = 0.1f;
-const static float kMoonRotationAxe = 0.f;
-const static float kMoonRotationSpeed = 0.5f;
-
-glm::mat4 earthRotation(GLfloat dt, const glm::mat4& model){
-    glm::vec3 rotationAxis = glm::vec3(0.f, 1.f, 0.f);
-    glm::mat4 rotation = glm::rotate(model, kEarthRotationSpeed, rotationAxis);
-    return rotation;
-};
-
-glm::mat4 moonRotation(GLfloat dt, const glm::mat4& model){
-    GLfloat theta = glm::radians(kMoonRotationAxe);
-    glm::vec3 rotationAxis = glm::vec3(cos(theta), sin(theta), 0.0f);
-    glm::mat4 rotation = glm::rotate(model, kMoonRotationSpeed, rotationAxis);
-    return rotation;
-};
+const static glm::vec3 kMoonRotationAxis = glm::vec3(0.f, 1.f, 0.f);
+const static glm::vec3 kMoonOrbitAxis = glm::vec3(0.f, 1.f, 0.f);
+const static float kMoonRotationSpeed = 0.1f;
+const static float kMoonOrbitSpeed = 0.04f;
 
 int main(int argc, char** argv){
-
     GLuint windowWidth  = 800;
     GLuint windowHeight = 600;
 
@@ -52,53 +48,36 @@ int main(int argc, char** argv){
     camera->setRatio(((GLfloat)windowWidth)/windowHeight);
     camera->moveTo(glm::vec3(-2.0f, 5.0f, 25.f));
     camera->setTarget(glm::vec3(-2.0f, .0f, 0.f));
-
-    // setup the spheres meshes and materials
-    MeshPointer sunMesh = Mesh::unitSphere();
-    MeshPointer earthMesh(new Mesh(sunMesh)); // shallow copy
-    MeshPointer moonMesh(new Mesh(sunMesh)); // shallow copy
     
-    // setup the model matrices for the planets
-    glm::mat4 sunModel   = glm::scale(glm::mat4(1.0f), glm::vec3(kSizeSun));
-    glm::mat4 earthModel = glm::scale(glm::translate(sunModel, glm::vec3(kRadOrbitEarth,0.,0.)), glm::vec3(kSizeEarth));
-    // tilt earth
-    GLfloat theta = glm::radians(kEarthRotationAxe);
-    earthModel = glm::rotate(earthModel, kEarthRotationSpeed, glm::vec3(0.f, 0.f, 1.f));
-    glm::mat4 moonModel = glm::scale(glm::translate(earthModel, glm::vec3(kRadOrbitMoon,0.,0.)), glm::vec3(kSizeMoon));
-
-    // create the suns
-    glm::vec4 sunColor = glm::vec4(1.,1.,0.,1.);
+    // setup the materials
     MaterialPointer sunMaterial(new Material());
-    sunMesh->setSimpleColor(sunColor);
     sunMaterial->setAmbient(1.0f);
-    EntityPointer sun(new Entity(sunMesh, sunMaterial, shader, sunModel));
-    //sun->setUpdateFct(rotation);
-
-    // create the planes
     MaterialPointer planetMaterial(new Material());
-    
-    glm::vec4 earthColor = glm::vec4(0.,1.,0.2,1.);
-    earthMesh->setSimpleColor(earthColor);
-    EntityPointer earth(new Entity(earthMesh, planetMaterial, shader, earthModel));
-    earth->setUpdateFct(earthRotation);
-    earth->loadTexture("media/earth.jpg");
 
-    glm::vec4 moonColor = glm::vec4(1.,1.,1.,1.);
-    moonMesh->setSimpleColor(moonColor);
-    EntityPointer moon(new Entity(moonMesh, planetMaterial, shader, moonModel));
-    moon->setUpdateFct(moonRotation);
-    moon->loadTexture("media/moon.jpg");
-
-    // create the lights
-    LightPointer sunLight(new Light(LightType::PointLight, glm::vec3(), glm::vec3(1.0,1.0,1.0), sunModel));
-    
     // create the scene
     ScenePointer scene(new Scene(camera));
-    scene->addElement(sun);
-    scene->addElement(earth);
-    scene->addElement(moon);
-    scene->addLight(sunLight);
 
+    // setup the the sun
+    SunPointer sun(new Sun(sunMaterial, shader, glm::vec3(), glm::vec3(1.0,1.0,1.0)));
+    sun->getMesh()->setSimpleColor(glm::vec4(1.,1.,0.,1.));
+    sun->addToScene(scene);
+    sun->init(kSizeSun, kSunRotationSpeed, kSunRotationAxis);
+
+    // setup the earth
+    PlanetPointer earth(new Planet(planetMaterial, shader));
+    earth->getMesh()->setSimpleColor(glm::vec4(0.,1.,0.2,1.));
+    earth->init(kSizeEarth, kEarthRotationSpeed, kEarthRotationAxis, kEarthOrbitSpeed, kEarthOrbitAxis, kRadOrbitEarth, sun);
+    earth->addToScene(scene);
+    earth->loadTexture("media/earth.jpg");
+    
+    // setup the moon
+    PlanetPointer moon(new Planet(planetMaterial, shader));
+    moon->getMesh()->setSimpleColor(glm::vec4(1.,1.,1.,1.));
+    moon->init(kSizeMoon, kMoonRotationSpeed, kMoonRotationAxis, kMoonOrbitSpeed, kMoonOrbitAxis, kRadOrbitMoon, earth);
+    moon->addToScene(scene);
+    moon->loadTexture("media/moon.jpg");
+
+    // main loop
     game->setScene(scene);
     game->run();
     game->quit();

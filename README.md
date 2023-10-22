@@ -24,3 +24,7 @@
 - Adding multiple planets and setting their properties
 
 ![solarSystem](report/media/lights.png)
+
+- Adding texture to the planets
+
+![earthTextured](report/media/texture.png)

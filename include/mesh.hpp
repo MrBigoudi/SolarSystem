@@ -328,6 +328,10 @@ class Mesh{
                     vertices.push_back(y);
                     vertices.push_back(z);
                     nbVertices++;
+
+                    // Generate textures
+                    uvs.push_back(j / (float)resolution);
+                    uvs.push_back(i / (float)resolution);
                 }
             }
 
@@ -356,13 +360,8 @@ class Mesh{
                 normals.push_back(norm.z);
             }
 
-            // Generate textures
-            for(int i=0; i<nbVertices; i++){
-                
-            }
 
-
-            return MeshPointer(new Mesh(vertices, indices, {}, {}, normals));
+            return MeshPointer(new Mesh(vertices, indices, {}, uvs, normals));
         }
 
 
