@@ -5,7 +5,10 @@
 #include "errorHandler.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/fwd.hpp"
+#include "glm/matrix.hpp"
 #include "mesh.hpp"
+#include "utils.hpp"
+#include <cstdio>
 #include <memory>
 
 class Planet;
@@ -94,7 +97,6 @@ class Planet : public Entity{
         Planet(const MaterialPointer& material, const ShadersPointer& shader)
             : Entity(material, shader){
             _Mesh = MeshPointer(new Mesh(getSphereMesh()));
-            //_Mesh = MeshPointer(new Mesh(Mesh::unitSphere()));
         }
 
         /**
@@ -108,14 +110,14 @@ class Planet : public Entity{
             _Size = size;
             _RotationSpeed = rotationSpeed;
             _RotationAxis = rotationAxis;
-            _Position = position;
             _Model = glm::scale(glm::translate(_Model, position), glm::vec3(size));
+            updatePosition();
             _IsInitialized = true;
         }
 
         /**
          * Init the planets
-         * @param size The planet's size
+         * @param size The planet's size relative to its parent size
          * @param rotationSpeed The rotation's speed
          * @param rotationAxis The rotation angle axis
          * @param orbitSpeed The orbit's rotation speed
@@ -133,7 +135,7 @@ class Planet : public Entity{
             _OrbitSpeed = orbitSpeed;
             _OrbitCenter = orbitCenter;
             _OrbitAxis = orbitAxis;
-            _Model = glm::scale(glm::translate(_OrbitCenter->_Model, glm::vec3(orbitRadius,0.,0.)), glm::vec3(size));
+            _Model = glm::scale(glm::translate(glm::mat4(1.0f), _OrbitCenter->_Position + glm::vec3(orbitRadius, 0.0f, 0.0f)), glm::vec3(size));
             updatePosition();
             _IsInitialized = true;
         }
@@ -150,12 +152,22 @@ class Planet : public Entity{
                 ErrorHandler::handle(ErrorCodes::NOT_INITALIZED);
             }
             // rotate arround itself
-            _Model = glm::rotate(_Model, _RotationSpeed, _RotationAxis);
+            _Model = glm::scale(glm::mat4(1.0f), glm::vec3(_Size));
+            _Model = glm::rotate(_Model, _RotationSpeed*dt, _RotationAxis);
+
             // orbit arround parent
             if(_OrbitCenter != nullptr){
-                glm::mat4 orbit = glm::rotate(glm::translate(glm::mat4(1.0f), _OrbitCenter->_Position), _OrbitSpeed, _OrbitAxis);
-                _Model = orbit*_Model;
+                glm::vec3 orbitRadius = glm::vec3(_OrbitRadius, 0.0f, 0.0f);
+                // move the planet at the correct distance to the orbit center
+                glm::mat4 translation = glm::translate(glm::mat4(1.0f), orbitRadius);
+                // rotate the planet arround the orbit center
+                glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), _OrbitSpeed*dt, _OrbitAxis);
+                // remove the tilt action of the parent
+                glm::mat4 tiltCorrection = glm::rotate(glm::mat4(1.0f), -_OrbitCenter->_RotationSpeed * dt, _OrbitCenter->_RotationAxis);
+                // apply the center's transformations to the planet
+                _Model = _OrbitCenter->getModel() * tiltCorrection * rotation * translation * _Model;
             }
+            // update the position
             updatePosition();
         }
 
@@ -164,7 +176,8 @@ class Planet : public Entity{
          * Update the position
         */
         void updatePosition(){
-            _Position = _Model*glm::vec4(0.0f);
+            _Position = _Model*glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            //utils::displayVector3(_Position, stdout);
         }
 
 };

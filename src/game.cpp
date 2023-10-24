@@ -29,9 +29,6 @@ void Game::run(){
     // init the buffers
     _Scene->initMeshes();
 
-    // set the clear color
-    setClearColor(0.2f, 0.3f, 0.3f);
-
     while(!glfwWindowShouldClose(_Window.get())){
         // update
         update();

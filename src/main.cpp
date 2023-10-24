@@ -18,23 +18,26 @@
 // sun
 const static float kSizeSun = 1;
 const static glm::vec3 kSunRotationAxis = glm::vec3(0.f, 1.f, 0.f);
-const static float kSunRotationSpeed = 0.01f;
+const static float kSunRotationSpeed = 0.25f;
 
 // earth
 const static float kSizeEarth = 0.5;
 const static float kRadOrbitEarth = 10;
-const static glm::vec3 kEarthRotationAxis = glm::vec3(0.f, 23.5f, 0.f);
+const static float kEarthAngle = glm::radians(23.5f);
+const static glm::vec3 kEarthRotationAxis = glm::vec3(sin(kEarthAngle), cos(kEarthAngle), 0.f);
 const static glm::vec3 kEarthOrbitAxis = glm::vec3(0.f, 1.f, 0.f);
-const static float kEarthRotationSpeed = 0.05f;
-const static float kEarthOrbitSpeed = 0.01f;
 
 // moon
-const static float kSizeMoon = 0.25;
+const static float kSizeMoon = 0.5;
 const static float kRadOrbitMoon = 2;
 const static glm::vec3 kMoonRotationAxis = glm::vec3(0.f, 1.f, 0.f);
 const static glm::vec3 kMoonOrbitAxis = glm::vec3(0.f, 1.f, 0.f);
-const static float kMoonRotationSpeed = 0.1f;
-const static float kMoonOrbitSpeed = 0.04f;
+
+// speeds for orbital constraints
+const static float kEarthRotationSpeed = .05f; // fixed
+const static float kEarthOrbitSpeed = 2.0f*kRadOrbitEarth*kEarthRotationSpeed;
+const static float kMoonOrbitSpeed = 2.0f*kRadOrbitMoon*kEarthRotationSpeed;
+const static float kMoonRotationSpeed = 2.0f*kEarthRotationSpeed;
 
 int main(int argc, char** argv){
     GLuint windowWidth  = 800;
@@ -78,6 +81,7 @@ int main(int argc, char** argv){
     moon->loadTexture("media/moon.jpg");
 
     // main loop
+    game->setClearColor(0.0f, 0.0f, 0.0f); // set a black background
     game->setScene(scene);
     game->run();
     game->quit();

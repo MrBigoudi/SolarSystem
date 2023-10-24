@@ -116,9 +116,11 @@ class Game{
          * @return The game instance
         */
         static GamePointer init(int width, int height, const std::string& title, 
-            GLuint major = 3, GLuint minor = 3, GLuint profile = GLFW_OPENGL_CORE_PROFILE, GLuint resizable = GLFW_FALSE){
+            GLuint major = 3, GLuint minor = 3, GLuint profile = GLFW_OPENGL_CORE_PROFILE, GLuint resizable = GLFW_TRUE){
             GamePointer gamePtr = getInstance();
             gamePtr->initGame(width, height, title, major, minor, profile, resizable);
+            // set the clear color
+            gamePtr->setClearColor(0.2f, 0.3f, 0.3f);
             return gamePtr;
         }
 

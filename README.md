@@ -28,3 +28,13 @@
 - Adding texture to the planets
 
 ![earthTextured](report/media/texture.png)
+
+- Adding all the rotations
+
+![rotations](report/media/rotations.png)
+
+## Bonus
+
+- You can move the camera using the arrows and you can zoom in and zoom out by scrolling in the window.
+
+- The code is made so that it is easy to add other planets or suns using the Planet and Sun classes.
