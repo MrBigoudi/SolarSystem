@@ -3,11 +3,7 @@
 
 #include "entity.hpp"
 #include "errorHandler.hpp"
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/fwd.hpp"
-#include "glm/matrix.hpp"
 #include "mesh.hpp"
-#include "utils.hpp"
 #include <cstdio>
 #include <memory>
 

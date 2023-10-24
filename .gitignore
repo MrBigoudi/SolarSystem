@@ -1,6 +1,6 @@
 build/
 *.o
 .cache
-#dep
+dep
 vgcore.*
 Makefile

@@ -1,0 +1,23 @@
+# Project name
+PROJECT_NAME           = "SolarSystem"
+
+# Input directory (where your header files are)
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/include/ @CMAKE_CURRENT_SOURCE_DIR@/docs
+
+# Output directory (where documentation will be generated)
+OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/doc_doxygen/
+
+# Recurse into subdirectories
+RECURSIVE              = YES
+
+# File patterns to include
+FILE_PATTERNS          = *.hpp
+
+# Excludes directories (optional, adjust as needed)
+EXCLUDE                = 
+
+# Generate HTML output
+GENERATE_HTML          = YES
+
+# Output format
+HTML_OUTPUT            = html
